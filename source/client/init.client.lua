@@ -618,3 +618,5 @@ function lib:CreateWindow(title)
 
 	return pages
 end
+
+return lib
