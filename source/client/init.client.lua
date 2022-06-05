@@ -354,11 +354,11 @@ function lib:CreateWindow(title)
 				Position = UDim2.new(0.0671834648, 0, 0.148648649, 0),
 				Size = UDim2.new(0, 61, 0, 26),
 				Font = Enum.Font.SourceSansSemibold,
-				AutomaticSize = Enum.AutomaticSize.X,
 				Text = slider_name or "Slider",
 				TextColor3 = palette.Text,
 				TextSize = 23,
-				TextXAlignment = Enum.TextXAlignment.Left
+				TextXAlignment = Enum.TextXAlignment.Left,
+				AutomaticSize = Enum.AutomaticSize.X
 			}, {
 				CreateInstance("UIPadding", {
 					PaddingLeft = UDim.new(0, 10),
@@ -519,7 +519,8 @@ function lib:CreateWindow(title)
 					Text = toggle_name,
 					TextColor3 = palette.Text,
 					TextSize = 23,
-					TextXAlignment = Enum.TextXAlignment.Left
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.X
 				}, {
 					-- Components
 					CreateInstance("UICorner", {
@@ -611,6 +612,147 @@ function lib:CreateWindow(title)
 			button.MouseButton1Down:Connect(function()
 				pcall(callback)
 			end)
+		end
+
+		function content.Dropdown(dropdown_name, options, callback)
+			local dropdown = CreateInstance("Frame", {
+				Name = "DropdownBackground",
+				Parent = page,
+				BackgroundColor3 = Color3.fromRGB(26, 26, 26),
+				BorderSizePixel = 0,
+				ClipsDescendants = true,
+				Size = UDim2.new(0, 447, 0, 38)
+			}, {
+				CreateInstance("TextLabel", {
+					Name = "DropdownTitle",
+					BackgroundColor3 = Color3.fromRGB(35, 35, 35),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Position = UDim2.new(0, 30, 0, 6),
+					Size = UDim2.new(0, 61, 0, 26),
+					Font = Enum.Font.SourceSansSemibold,
+					Text = dropdown_name,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 23,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.X
+				}, {
+					-- Components
+					CreateInstance("UIPadding", {
+						PaddingLeft = UDim.new(0, 10),
+						PaddingRight = UDim.new(0, 10)
+					}),
+				}),
+				CreateInstance("ImageButton", {
+					Name = "Toggle",
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					LayoutOrder = 9,
+					Position = UDim2.new(0, 414, 0, 7),
+					Size = UDim2.new(0, 25, 0, 25),
+					ZIndex = 2,
+					Image = "rbxassetid://3926305904",
+					ImageRectOffset = Vector2.new(564, 284),
+					ImageRectSize = Vector2.new(36, 36)
+				}),
+				CreateInstance("ScrollingFrame", {
+					Name = "List",
+					Active = true,
+					BackgroundColor3 = Color3.fromRGB(34, 34, 34),
+					BorderSizePixel = 0,
+					Position = UDim2.new(0, 0, 0, 38),
+					Size = UDim2.new(1, 0, 0, 127),
+					CanvasSize = UDim2.new(0, 0, 0, 0),
+					ScrollBarThickness = 0,
+					AutomaticCanvasSize = Enum.AutomaticSize.Y
+				}, {
+					CreateInstance("UICorner", {
+						CornerRadius = UDim.new(0, 4)
+					}),
+					CreateInstance("UIListLayout", {
+						SortOrder = Enum.SortOrder.LayoutOrder
+					})
+				})
+			})
+
+			-- Locals
+			local toggle = dropdown:FindFirstChild("Toggle")
+			local list = dropdown:FindFirstChild("List")
+			local name = dropdown:FindFirstChild("DropdownTitle")
+
+			local toggled = false
+			local tweening = false
+			local current = nil
+
+			-- Connections
+			toggle.MouseButton1Down:Connect(function()
+				if (tweening) then return end
+
+				if (toggled) then
+					local tween = tween_service:Create(dropdown, TweenInfo.new(.3), {
+						Size = UDim2.new(0, 447, 0, 38)
+					})
+
+					tweening = true
+					tween:Play()
+					tween.Completed:Wait()
+					tweening = false
+				else
+					local tween = tween_service:Create(dropdown, TweenInfo.new(.3), {
+						Size = UDim2.new(0, 447, 0, list.AbsoluteCanvasSize.Y + 38)
+					})
+
+					tweening = true
+					tween:Play()
+					tween.Completed:Wait()
+					tweening = false
+				end
+
+				toggled = not toggled
+			end)
+
+			for _, v in ipairs(options) do
+				local button = CreateInstance("TextButton", {
+					Name = v,
+					Parent = list,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Size = UDim2.new(1, 0, 0, 25),
+					Font = Enum.Font.SourceSansSemibold,
+					TextColor3 = Color3.fromRGB(127, 127, 127),
+					TextSize = 18,
+					Text = v .. " (Not Selected)"
+				})
+
+				local total_buttons = (function()
+					local found = 0
+
+					for _, located in ipairs(list:GetChildren()) do
+						if (located:IsA("TextButton")) then
+							found += 1
+						end
+					end
+
+					return found
+				end)()
+
+				list.Size = UDim2.fromOffset(dropdown.Size.X.Offset, total_buttons * 25)
+
+				button.MouseButton1Down:Connect(function()
+					if (current) then
+						current.TextColor3 = Color3.fromRGB(127, 127, 127)
+						current.Text = current.Name .. " (Not Selected)"
+					end
+
+					current = button
+					button.TextColor3 = Color3.fromRGB(255, 255, 255)
+					button.Text = button.Name .. " (Selected)"
+
+					name.Text = string.format("%s (%s)", dropdown_name, button.Name)
+					pcall(callback, button.Name)
+				end)
+			end
 		end
 
 		return content
