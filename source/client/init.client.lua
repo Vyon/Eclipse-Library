@@ -3,6 +3,7 @@ local players = game:GetService("Players")
 local core_gui = game:GetService("CoreGui")
 local run_service = game:GetService("RunService")
 local tween_service = game:GetService("TweenService")
+local starter_gui = game:GetService("StarterGui")
 local user_input_service = game:GetService("UserInputService")
 
 -- Player:
@@ -24,16 +25,6 @@ local function DarkenColor(color, opacity_percentage)
 	return Color3.new(red, green, blue)
 end
 
-local function GenerateString(length)
-	local str = ""
-
-	for i = 1, length do
-		str = str .. string.char(math.random(97, 122))
-	end
-
-	return str
-end
-
 local function CreateInstance(class, properties, children)
 	local instance = Instance.new(class)
 
@@ -43,10 +34,6 @@ local function CreateInstance(class, properties, children)
 
 	for _, child in pairs(children or {}) do
 		child.Parent = instance
-	end
-
-	if (class == "ScreenGui") then
-		instance.Name = GenerateString(10)
 	end
 
 	return instance
@@ -66,6 +53,16 @@ local function GetMainUI()
 	end
 end
 
+local function TableLength(table)
+	local count = 0
+
+	for _ in pairs(table) do
+		count += 1
+	end
+
+	return count
+end
+
 if (GetMainUI()) then
 	local main_ui = GetMainUI()
 	main_ui:Destroy() -- Prevent Eclipse from being multiple times.
@@ -77,6 +74,7 @@ lib.FLAGS = {}
 lib.MainGui = CreateInstance("ScreenGui", {
 	Name = "EclipseLib",
 	ResetOnSpawn = false,
+	DisplayOrder = 69420,
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 })
 
@@ -85,7 +83,7 @@ lib.MainGui.Parent = run_service:IsStudio() and player_gui or core_gui
 lib.MainGui:SetAttribute("Eclipse", true)
 
 -- Methods:
-function lib:CreateWindow(title)
+function lib:Window(title)
 	local window = CreateInstance("Frame", {
 		Name = "Window",
 		Parent = self.MainGui,
@@ -232,9 +230,7 @@ function lib:CreateWindow(title)
 		in_frame = false
 	end)
 
-	user_input_service.InputBegan:Connect(function(input, game_processed)
-		if (game_processed) then return end
-
+	user_input_service.InputBegan:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseButton1 and in_frame) then
 			button1_down = true
 			origin = user_input_service:GetMouseLocation()
@@ -242,9 +238,7 @@ function lib:CreateWindow(title)
 		end
 	end)
 
-	user_input_service.InputChanged:Connect(function(input, game_processed)
-		if (game_processed) then return end
-
+	user_input_service.InputChanged:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseMovement and button1_down) then
 			local mouse_position = user_input_service:GetMouseLocation()
 			local final = position + ((mouse_position - origin) / workspace.CurrentCamera.ViewportSize)
@@ -253,9 +247,7 @@ function lib:CreateWindow(title)
 		end
 	end)
 
-	user_input_service.InputEnded:Connect(function(input, game_processed)
-		if (game_processed) then return end
-
+	user_input_service.InputEnded:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseButton1) then
 			button1_down = false
 		end
@@ -304,11 +296,13 @@ function lib:CreateWindow(title)
 			Parent = window.Container,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
+			ZIndex = TableLength(pages.Created) + 1,
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ScrollBarImageTransparency = 1,
 			Position = UDim2.new(0, 0, 0.0252100844, 0),
 			Size = UDim2.new(1, 0, 0.945378125, 0),
-			CanvasSize = UDim2.new(0, 0, 0, 0)
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			Visible = TableLength(pages.Created) == 0 and true or false
 		}, {
 			CreateInstance("UIListLayout", {
 				SortOrder = Enum.SortOrder.LayoutOrder,
@@ -759,6 +753,17 @@ function lib:CreateWindow(title)
 	end
 
 	return pages
+end
+
+function lib.Notification(info)
+	starter_gui:SetCore("SendNotification", {
+		Title = info.Title or "No title was set",
+		Text = info.Content or "",
+		Duration = info.Duration or 5,
+		Callback = info.Callback,
+		Button1 = info.Button1,
+		Button2 = info.Button2
+	})
 end
 
 return lib
