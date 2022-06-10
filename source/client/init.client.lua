@@ -465,9 +465,7 @@ function lib:Window(title)
 				Set(start)
 			end
 
-			user_input_service.InputChanged:Connect(function(input, game_processed)
-				if (game_processed) then return end
-
+			user_input_service.InputChanged:Connect(function(input)
 				if (input.UserInputType == Enum.UserInputType.MouseMovement and active) then
 					Update(input.Position.X)
 				end
