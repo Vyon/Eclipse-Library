@@ -704,48 +704,63 @@ function lib:Window(title)
 				toggled = not toggled
 			end)
 
-			for _, v in ipairs(options) do
-				local button = CreateInstance("TextButton", {
-					Name = v,
-					Parent = list,
-					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					Size = UDim2.new(1, 0, 0, 25),
-					Font = Enum.Font.SourceSansSemibold,
-					TextColor3 = Color3.fromRGB(127, 127, 127),
-					TextSize = 18,
-					Text = v .. " (Not Selected)"
-				})
+			local function Update(choices)
+				for _, v in ipairs(list:GetChildren()) do
+					if (v:IsA("TextButton")) then
+						v:Destroy()
+					end
+				end
 
-				local total_buttons = (function()
-					local found = 0
+				for _, v in ipairs(choices) do
+					v = tostring(v)
 
-					for _, located in ipairs(list:GetChildren()) do
-						if (located:IsA("TextButton")) then
-							found += 1
+					local button = CreateInstance("TextButton", {
+						Name = v,
+						Parent = list,
+						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+						Size = UDim2.new(1, 0, 0, 25),
+						Font = Enum.Font.SourceSansSemibold,
+						TextColor3 = Color3.fromRGB(127, 127, 127),
+						TextSize = 18,
+						Text = v .. " (Not Selected)"
+					})
+
+					list.Size = UDim2.fromOffset(dropdown.Size.X.Offset, #choices * 25)
+
+					button.MouseButton1Down:Connect(function()
+						if (current) then
+							current.TextColor3 = Color3.fromRGB(127, 127, 127)
+							current.Text = current.Name .. " (Not Selected)"
 						end
-					end
 
-					return found
-				end)()
+						current = button
+						button.TextColor3 = Color3.fromRGB(255, 255, 255)
+						button.Text = button.Name .. " (Selected)"
 
-				list.Size = UDim2.fromOffset(dropdown.Size.X.Offset, total_buttons * 25)
+						name.Text = string.format("%s (%s)", dropdown_name, button.Name)
+						pcall(callback, button.Name)
+					end)
+				end
 
-				button.MouseButton1Down:Connect(function()
-					if (current) then
-						current.TextColor3 = Color3.fromRGB(127, 127, 127)
-						current.Text = current.Name .. " (Not Selected)"
-					end
+				if (toggled) then
+					local tween = tween_service:Create(dropdown, TweenInfo.new(.3), {
+						Size = UDim2.new(0, 447, 0, list.AbsoluteCanvasSize.Y + 38)
+					})
 
-					current = button
-					button.TextColor3 = Color3.fromRGB(255, 255, 255)
-					button.Text = button.Name .. " (Selected)"
-
-					name.Text = string.format("%s (%s)", dropdown_name, button.Name)
-					pcall(callback, button.Name)
-				end)
+					tweening = true
+					tween:Play()
+					tween.Completed:Wait()
+					tweening = false
+				end
 			end
+
+			Update(options)
+
+			return {
+				Refresh = Update
+			}
 		end
 
 		function content.Input(input_name, callback, placeholder_text)
