@@ -582,7 +582,8 @@ function lib:Window(title)
 					Text = button_name,
 					TextColor3 = palette.Text,
 					TextSize = 23,
-					TextXAlignment = Enum.TextXAlignment.Left
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.X
 				}, {
 					-- Components
 					CreateInstance("UICorner", {
@@ -745,6 +746,80 @@ function lib:Window(title)
 					pcall(callback, button.Name)
 				end)
 			end
+		end
+
+		function content.Input(input_name, callback, placeholder_text)
+			local input = CreateInstance("Frame", {
+				Name = "InputBackground",
+				Parent = page,
+				BackgroundColor3 = Color3.fromRGB(26, 26, 26),
+				BorderSizePixel = 0,
+				Selectable = true,
+				Size = UDim2.new(0, 447, 0, 41)
+			}, {
+				CreateInstance("TextLabel", {
+					Name = "InputTitle",
+					BackgroundColor3 = Color3.fromRGB(35, 35, 35),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Position = UDim2.new(0.0671834648, 0, 0.169651359, 0),
+					Size = UDim2.new(0, 61, 0, 26),
+					Font = Enum.Font.SourceSansSemibold,
+					Text = input_name,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 23,
+					TextXAlignment = Enum.TextXAlignment.Left
+				}, {
+					CreateInstance("UICorner", {
+						CornerRadius = UDim.new(0, 4)
+					}),
+
+					CreateInstance("UIPadding", {
+						PaddingLeft = UDim.new(0, 10),
+						PaddingRight = UDim.new(0, 10)
+					})
+				}),
+
+				CreateInstance("Frame", {
+					Name = "InputContainer",
+					BackgroundColor3 = Color3.fromRGB(38, 38, 38),
+					Position = UDim2.new(0.768000007, 0, 0.162, 0),
+					Size = UDim2.new(0.217002243, 0, 0.609756112, 0)
+				}, {
+					CreateInstance("TextBox", {
+						Name = "InputField",
+						BackgroundTransparency = 1,
+						Size = UDim2.new(1, 0, 1, 0),
+						ClearTextOnFocus = false,
+						Font = Enum.Font.SourceSansSemibold,
+						PlaceholderColor3 = DarkenColor(palette.Content, 75),
+						PlaceholderText = placeholder_text or "Value",
+						Text = "",
+						TextWrapped = true,
+						TextColor3 = palette.Content,
+						TextSize = 18
+					}),
+
+					CreateInstance("UICorner", {
+						CornerRadius = UDim.new(0, 4)
+					})
+				}),
+
+				CreateInstance("UICorner", {
+					CornerRadius = UDim.new(0, 4)
+				})
+			})
+
+			local input_container = input:FindFirstChild("InputContainer")
+			local input_field = input_container:FindFirstChild("InputField")
+
+			input_field.FocusLost:Connect(function()
+				if (input_field.Text == "") then
+					return
+				end
+
+				pcall(callback, input_field.Text)
+			end)
 		end
 
 		return content
