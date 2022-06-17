@@ -47,11 +47,6 @@ local function TableLength(table)
 	return count
 end
 
-if (GetMainUI()) then
-	local main_ui = GetMainUI()
-	main_ui:Destroy() -- Prevent Eclipse from being multiple times.
-end
-
 -- Main Module:
 local lib = {}
 lib.FLAGS = {}
