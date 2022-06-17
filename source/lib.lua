@@ -1,7 +1,5 @@
 -- Services:
 local players = game:GetService("Players")
-local core_gui = game:GetService("CoreGui")
-local run_service = game:GetService("RunService")
 local tween_service = game:GetService("TweenService")
 local starter_gui = game:GetService("StarterGui")
 local user_input_service = game:GetService("UserInputService")
@@ -39,20 +37,6 @@ local function CreateInstance(class, properties, children)
 	return instance
 end
 
-local function GetMainUI()
-	if (not run_service:IsStudio()) then
-		local children = core_gui:GetChildren()
-
-		for _, child in pairs(children) do
-			if (child:GetAttribute("Eclipse")) then
-				return child
-			end
-		end
-	else
-		return player_gui:FindFirstChild("EclipseLib")
-	end
-end
-
 local function TableLength(table)
 	local count = 0
 
@@ -79,7 +63,7 @@ lib.MainGui = CreateInstance("ScreenGui", {
 })
 
 -- Main Gui setup:
-lib.MainGui.Parent = run_service:IsStudio() and player_gui or core_gui
+lib.MainGui.Parent = player_gui
 lib.MainGui:SetAttribute("Eclipse", true)
 
 -- Methods:
